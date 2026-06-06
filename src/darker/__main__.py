@@ -31,7 +31,7 @@ from darker.vcs.runtime import get_active_vcs, set_active_vcs
 from darker.help import LINTING_GUIDE, get_extra_instruction
 from darker.import_sorting import apply_isort, isort
 from darker.terminal import output
-from darker.utils import debug_dump, glob_any
+from darker.utils import debug_dump, ensure_trailing_newline, glob_any
 from darker.verification import ASTVerifier, BinarySearch, NotEquivalentError
 from darkgraylib.command_line import (
     EXIT_CODE_CMDLINE_ERROR,
@@ -173,6 +173,7 @@ def _modify_and_reformat_single_file(  # noqa: PLR0913
         has_isort_changes,
         formatter,
     )
+    content_after_reformatting = ensure_trailing_newline(content_after_reformatting)
     return absolute_path_in_rev2, rev2_content, content_after_reformatting
 
 

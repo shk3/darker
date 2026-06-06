@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Collection, List
 
 from darker.terminal import output
-from darkgraylib.utils import DiffChunk
+from darkgraylib.utils import DiffChunk, TextDocument
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,20 @@ def debug_dump(black_chunks: List[DiffChunk], edited_linenums: List[int]) -> Non
         for _, new_line in enumerate(new_lines):
             output(f" +     {new_line}", end="\n")
     output(80 * "-", end="\n")
+
+
+def ensure_trailing_newline(content: TextDocument) -> TextDocument:
+    """Ensure non-empty files end with the document's newline sequence (PEP 8 / Black)."""
+    if not content.string.strip():
+        return content
+    if content.string.endswith(content.newline):
+        return content
+    return TextDocument.from_str(
+        content.string + content.newline,
+        encoding=content.encoding,
+        override_newline=content.newline,
+        mtime=content.mtime,
+    )
 
 
 def glob_any(path: Path, patterns: Collection[str]) -> bool:

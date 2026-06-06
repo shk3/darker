@@ -7,6 +7,8 @@ Added
 -----
 - Sapling SCM support: ``--vcs=sapling`` or ``vcs = "sapling"`` in ``[tool.darker]``.
   ``--vcs=auto`` (default) uses Git when both Git and Sapling are present.
+- Ensure a trailing newline on non-empty files processed by Darker (PEP 8 / Black),
+  including when only edited regions were reformatted.
 
 Fixed
 -----
