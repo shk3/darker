@@ -5,6 +5,8 @@ These features will be included in the next release:
 
 Added
 -----
+- Sapling SCM support: ``--vcs=sapling`` or ``vcs = "sapling"`` in ``[tool.darker]``.
+  ``--vcs=auto`` (default) uses Git when both Git and Sapling are present.
 
 Fixed
 -----

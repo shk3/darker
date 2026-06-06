@@ -90,6 +90,13 @@ def make_argument_parser(require_src: bool) -> ArgumentParser:
         choices=get_formatter_names(),
         metavar="FORMATTER",
     )
+    add_arg(
+        hlp.VCS,
+        "--vcs",
+        default="auto",
+        choices=["auto", "git", "sapling"],
+        metavar="VCS",
+    )
     return parser
 
 

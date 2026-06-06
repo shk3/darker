@@ -68,6 +68,12 @@ see the relevant sections below in this document.
 
 *New in version 1.4.0:* Darker can be used in plain directories, not only Git repositories.
 
+Darker also supports `Sapling SCM`_ via ``--vcs=sapling`` (requires the ``sl`` command).
+With ``--vcs=auto`` (the default), Git is preferred when a checkout has both Git and
+Sapling metadata.
+
+.. _Sapling SCM: https://sapling-scm.com/
+
 .. |you-can-help| image:: https://img.shields.io/badge/-You%20can%20help-green?style=for-the-badge
    :alt: You can help
 .. |support| image:: https://img.shields.io/badge/-Support-green?style=for-the-badge

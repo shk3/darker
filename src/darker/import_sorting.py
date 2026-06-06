@@ -9,7 +9,7 @@ from darker.diff import diff_chunks
 from darker.exceptions import IncompatiblePackageError, MissingPackageError
 from darker.git import EditedLinenumsDiffer
 from darker.utils import glob_any
-from darkgraylib.files import find_project_root
+from darker.vcs import find_repository_root as find_project_root
 from darkgraylib.utils import DiffChunk, TextDocument
 
 try:

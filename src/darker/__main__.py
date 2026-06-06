@@ -25,9 +25,9 @@ from darker.git import (
     EditedLinenumsDiffer,
     get_missing_at_revision,
     get_path_in_repo,
-    git_get_modified_python_files,
-    git_is_repository,
 )
+from darker.vcs import find_repository_root
+from darker.vcs.runtime import get_active_vcs, set_active_vcs
 from darker.help import LINTING_GUIDE, get_extra_instruction
 from darker.import_sorting import apply_isort, isort
 from darker.terminal import output
@@ -40,7 +40,7 @@ from darkgraylib.command_line import (
     EXIT_CODE_UNKNOWN,
 )
 from darkgraylib.config import show_config_if_debug
-from darkgraylib.files import find_project_root
+
 from darkgraylib.git import (
     PRE_COMMIT_FROM_TO_REFS,
     STDIN,
@@ -139,9 +139,15 @@ def _modify_and_reformat_single_file(  # noqa: PLR0913
     if revrange.rev2 == STDIN:
         rev2_content = TextDocument.from_bytes(sys.stdin.buffer.read())
     else:
-        rev2_content = git_get_content_at_revision(
-            relative_path_in_rev2, revrange.rev2, root
-        )
+        vcs = get_active_vcs()
+        if vcs is not None:
+            rev2_content = vcs.get_content_at_revision(
+                relative_path_in_rev2, revrange.rev2, root
+            )
+        else:
+            rev2_content = git_get_content_at_revision(
+                relative_path_in_rev2, revrange.rev2, root
+            )
     # 1. run isort on each edited file (optional).
     rev2_isorted = apply_isort(
         rev2_content,
@@ -530,9 +536,17 @@ def main(  # noqa: C901,PLR0912,PLR0915
     # `paths` are the unmodified paths from `--stdin-filename` or `SRC`,
     # so either relative to the current working directory or absolute paths.
 
-    revrange = RevisionRange.parse_with_common_ancestor(
-        args.revision, common_root, args.stdin_filename is not None
-    )
+    vcs_preference = getattr(args, "vcs", "auto")
+    set_active_vcs(common_root, vcs_preference)
+    active_vcs = get_active_vcs()
+    if active_vcs is not None:
+        revrange = active_vcs.parse_revision_range(
+            args.revision, common_root, args.stdin_filename is not None
+        )
+    else:
+        revrange = RevisionRange.parse_with_common_ancestor(
+            args.revision, common_root, args.stdin_filename is not None
+        )
     output_mode = OutputMode.from_args(args)
     write_modified_files = not args.check and output_mode == OutputMode.NOTHING
     if write_modified_files:
@@ -582,14 +596,16 @@ def main(  # noqa: C901,PLR0912,PLR0915
         formatter_exclude = set()
     else:
         # In other modes, only reformat files which have been modified.
-        if git_is_repository(common_root):
-            # Get the modified files only.
-            repo_root = find_project_root((str(common_root),))
+        if active_vcs is not None:
+            repo_root = find_repository_root(
+                (str(common_root),), vcs=vcs_preference
+            )
             changed_files = {
                 (repo_root / file).relative_to(common_root)
-                for file in git_get_modified_python_files(paths, revrange, repo_root)
+                for file in active_vcs.get_modified_python_files(
+                    paths, revrange, repo_root
+                )
             }
-            # Filter out changed files that are not supposed to be processed
             changed_files_to_reformat = files_to_process.intersection(changed_files)
 
         else:

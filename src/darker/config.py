@@ -46,6 +46,7 @@ class DarkerConfig(BaseConfig, total=False):
     skip_string_normalization: bool
     target_version: str
     formatter: str
+    vcs: str
 
 
 class OutputMode:

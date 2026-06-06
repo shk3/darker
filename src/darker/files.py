@@ -6,7 +6,7 @@ import re
 from functools import lru_cache
 from typing import TYPE_CHECKING, Collection, Iterable, Iterator
 
-from darkgraylib.files import find_project_root
+from darker.vcs import find_repository_root as find_project_root
 
 if TYPE_CHECKING:
     from pathlib import Path

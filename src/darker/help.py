@@ -55,12 +55,19 @@ SRC = "Path(s) to the Python source file(s) to reformat"
 REVISION = (
     "Revisions to compare. The default is `HEAD..:WORKTREE:` which compares the latest"
     " commit to the working tree. Tags, branch names, commit hashes, and other"
-    " expressions like `HEAD~5` work here. Also a range like `main...HEAD` or `main...`"
-    " can be used to compare the best common ancestor. With the magic value"
-    " `:PRE-COMMIT:`, Darker works in pre-commit compatible mode. Darker expects the"
-    " revision range from the `PRE_COMMIT_FROM_REF` and `PRE_COMMIT_TO_REF` environment"
-    " variables. If those are not found, Darker works against `HEAD`. Also see"
-    " `--stdin-filename=` for the `:STDIN:` special value."
+    " expressions like `HEAD~5` work here (Git) or Sapling revision expressions when"
+    " using `--vcs=sapling`. Also a range like `main...HEAD` or `main...` can be used"
+    " to compare the best common ancestor. With the magic value `:PRE-COMMIT:`, Darker"
+    " works in pre-commit compatible mode. Darker expects the revision range from the"
+    " `PRE_COMMIT_FROM_REF` and `PRE_COMMIT_TO_REF` environment variables. If those are"
+    " not found, Darker works against `HEAD`. Also see `--stdin-filename=` for the"
+    " `:STDIN:` special value."
+)
+
+VCS = (
+    "Version control system to use: `auto` (default) prefers Git when both Git and"
+    " Sapling metadata are present, otherwise Sapling; `git` or `sapling` force a"
+    " backend. Sapling requires the `sl` command on `PATH`."
 )
 
 DIFF = (

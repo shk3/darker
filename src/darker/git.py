@@ -9,6 +9,8 @@ from typing import Iterable, List, Set
 
 from darker.diff import opcodes_to_edit_linenums
 from darker.multiline_strings import get_multiline_string_ranges
+from darker.vcs.runtime import get_active_vcs
+
 from darkgraylib.diff import diff_and_get_opcodes
 from darkgraylib.git import (
     WORKTREE,
@@ -36,17 +38,9 @@ logger = logging.getLogger(__name__)
 
 def git_is_repository(path: Path) -> bool:
     """Return ``True`` if ``path`` is inside a Git working tree"""
-    try:
-        lines = git_check_output_lines(
-            ["rev-parse", "--is-inside-work-tree"], path, exit_on_error=False
-        )
-        return lines[:1] == ["true"]
-    except CalledProcessError as exc_info:
-        if exc_info.returncode != 128 or not exc_info.stderr.startswith(
-            "fatal: not a git repository"
-        ):
-            raise
-        return False
+    from darker.vcs.git_backend import GitVcsBackend
+
+    return GitVcsBackend.is_repository(path)
 
 
 def get_path_in_repo(path: Path) -> Path:
@@ -125,6 +119,13 @@ def get_missing_at_revision(paths: Iterable[Path], rev2: str, cwd: Path) -> Set[
     """
     if rev2 == WORKTREE:
         return {path for path in paths if not path.exists()}
+    vcs = get_active_vcs()
+    if vcs is not None:
+        return {
+            path
+            for path in paths
+            if not vcs.exists_at_revision(path, rev2, cwd)
+        }
     return {path for path in paths if not _git_exists_in_revision(path, rev2, cwd)}
 
 
@@ -224,7 +225,11 @@ def _revision_vs_lines(
     :return: Line numbers of lines changed between the revision and given content
 
     """
-    old = git_get_content_at_revision(path_in_repo, rev1, root)
+    vcs = get_active_vcs()
+    if vcs is not None:
+        old = vcs.get_content_at_revision(path_in_repo, rev1, root)
+    else:
+        old = git_get_content_at_revision(path_in_repo, rev1, root)
     # 2. diff the given revisions for the file
     edited_opcodes = diff_and_get_opcodes(old, content)
     multiline_string_ranges = list(get_multiline_string_ranges(content))
